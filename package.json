@@ -1,0 +1,64 @@
+{
+    "author": "AFSpeirs",
+    "dependencies": {
+        "pebble-clay": "^1.0.2"
+    },
+    "keywords": [],
+    "name": "sharingan",
+    "pebble": {
+        "capabilities": [
+            "configurable"
+        ],
+        "displayName": "Sharingan",
+        "enableMultiJS": true,
+        "messageKeys": [
+            "COLOUR_BACKGROUND",
+            "COLOUR_HAND_HOUR",
+            "COLOUR_HAND_MINUTE",
+            "COLOUR_WEEKDAY",
+            "COLOUR_DAY",
+            "COLOUR_MONTH"
+        ],
+        "projectType": "native",
+        "resources": {
+            "media": [
+                {
+                    "file": "fonts/Naruto",
+                    "name": "FONT_NARUTO_15",
+                    "targetPlatforms": null,
+                    "type": "font"
+                },
+                {
+                    "file": "images/Sharingan Full",
+                    "name": "IMAGE_SHARINGAN_FULL",
+                    "targetPlatforms": [
+                        "basalt"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/Battery White",
+                    "name": "IMAGE_BATTERY_WHITE",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/Battery Black",
+                    "name": "IMAGE_BATTERY_BLACK",
+                    "storageFormat": "png",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                }
+            ]
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "basalt"
+        ],
+        "uuid": "e5be6da7-7665-43b8-b09a-ddd6824ef5b1",
+        "watchapp": {
+            "watchface": true
+        }
+    },
+    "version": "0.1.0"
+}
