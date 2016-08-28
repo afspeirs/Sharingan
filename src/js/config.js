@@ -1,7 +1,7 @@
 module.exports = [
 	{ 
     	"type": "heading", 
-    	"defaultValue": "Simply Analog",
+    	"defaultValue": "Sharingan",
 		"size": 1,
 	},
 	{
@@ -20,16 +20,8 @@ module.exports = [
 			},
 			{
 				"type": "color",
-				"messageKey": "COLOUR_HAND_HOUR",
-				"label": "Hour",
-				"defaultValue": "FFAA00",
-				"sunlight": true,
-				"capabilities": ["NOT_BW"],
-			},
-			{
-				"type": "color",
-				"messageKey": "COLOUR_HAND_MINUTE",
-				"label": "Minute",
+				"messageKey": "COLOUR_HANDS",
+				"label": "Hands",
 				"defaultValue": "FFFFFF",
 				"sunlight": true,
 				"capabilities": ["NOT_BW"],
@@ -38,14 +30,6 @@ module.exports = [
 				"type": "color",
 				"messageKey": "COLOUR_WEEKDAY",
 				"label": "Weekday",
-				"defaultValue": "FFFFFF",
-				"sunlight": true,
-				"capabilities": ["NOT_BW"],
-			},
-			{
-				"type": "color",
-				"messageKey": "COLOUR_DAY",
-				"label": "Day",
 				"defaultValue": "FFFFFF",
 				"sunlight": true,
 				"capabilities": ["NOT_BW"],

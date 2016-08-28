@@ -13,10 +13,8 @@
         "enableMultiJS": true,
         "messageKeys": [
             "COLOUR_BACKGROUND",
-            "COLOUR_HAND_HOUR",
-            "COLOUR_HAND_MINUTE",
+            "COLOUR_HANDS",
             "COLOUR_WEEKDAY",
-            "COLOUR_DAY",
             "COLOUR_MONTH"
         ],
         "projectType": "native",
@@ -60,5 +58,5 @@
             "watchface": true
         }
     },
-    "version": "0.1.0"
+    "version": "0.2.0"
 }

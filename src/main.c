@@ -3,8 +3,8 @@
 
 static Window *s_main_window;
 static Layer *s_background_layer, *s_date_layer, *s_hands_layer;
-static TextLayer *s_weekday_label, *s_month_label; // *s_day_label,
-static char s_weekday_buffer[16], s_month_buffer[16]; // s_date_buffer[16],
+static TextLayer *s_weekday_label, *s_month_label;
+static char s_weekday_buffer[16], s_month_buffer[16];
 static BitmapLayer *s_sharingan_layer;
 static GPath *s_tick_paths[NUM_CLOCK_TICKS];
 static GPath *s_minute_arrow, *s_hour_arrow;
@@ -16,24 +16,18 @@ static GPath *s_minute_arrow, *s_hour_arrow;
 static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 // Colours
 	Tuple *colour_background_t	= dict_find(iter, MESSAGE_KEY_COLOUR_BACKGROUND);
- 	Tuple *colour_hand_hour_t	= dict_find(iter, MESSAGE_KEY_COLOUR_HAND_HOUR);
-	Tuple *colour_hand_minute_t = dict_find(iter, MESSAGE_KEY_COLOUR_HAND_MINUTE);
+ 	Tuple *colour_hands_t		= dict_find(iter, MESSAGE_KEY_COLOUR_HANDS);
 	Tuple *colour_weekday_t		= dict_find(iter, MESSAGE_KEY_COLOUR_WEEKDAY);
-	Tuple *colour_day_t			= dict_find(iter, MESSAGE_KEY_COLOUR_DAY);
 	Tuple *colour_month_t		= dict_find(iter, MESSAGE_KEY_COLOUR_MONTH);
 // 	Tuple *colour_bluetooth_t	= dict_find(iter, MESSAGE_KEY_COLOUR_BLUETOOTH);
     int colour_background		= colour_background_t->value->int32;
- 	int colour_hand_hour		= colour_hand_hour_t->value->int32;
-	int colour_hand_minute		= colour_hand_minute_t->value->int32;
+ 	int colour_hands			= colour_hands_t->value->int32;
 	int colour_weekday			= colour_weekday_t->value->int32;
-	int colour_day				= colour_day_t->value->int32;
 	int colour_month			= colour_month_t->value->int32;
 // 	int colour_bluetooth = colour_bluetooth_t->value->int32;
 	persist_write_int(MESSAGE_KEY_COLOUR_BACKGROUND, colour_background);
-	persist_write_int(MESSAGE_KEY_COLOUR_HAND_HOUR, colour_hand_hour);
-	persist_write_int(MESSAGE_KEY_COLOUR_HAND_MINUTE, colour_hand_minute);
+	persist_write_int(MESSAGE_KEY_COLOUR_HANDS, colour_hands);
 	persist_write_int(MESSAGE_KEY_COLOUR_WEEKDAY, colour_weekday);
-	persist_write_int(MESSAGE_KEY_COLOUR_DAY, colour_day);
 	persist_write_int(MESSAGE_KEY_COLOUR_MONTH, colour_month);
 // 	persist_write_int(MESSAGE_KEY_COLOUR_BLUETOOTH, colour_bluetooth);	
 	
@@ -41,7 +35,6 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 	layer_mark_dirty(s_background_layer); //update background
 	layer_mark_dirty(s_hands_layer); //update Hands
 	text_layer_set_text_color(s_weekday_label, GColorFromHEX(colour_weekday));	// Weekday
-// 	text_layer_set_text_color(s_day_label, GColorFromHEX(colour_day));			// Date
 	text_layer_set_text_color(s_month_label, GColorFromHEX(colour_month));		// Month
 }
 
@@ -54,11 +47,9 @@ static void bg_update_proc(Layer *layer, GContext *ctx) {
 	if(colour_background) {
 		graphics_context_set_fill_color(ctx, GColorFromHEX(colour_background));		// Background
 		graphics_fill_rect(ctx, layer_get_bounds(layer), 0, GCornerNone);
-		graphics_context_set_fill_color(ctx, gcolor_legible_over(GColorFromHEX(colour_background)));		// Markers
 	} else {
 		graphics_context_set_fill_color(ctx, GColorBlack);		// Background
 		graphics_fill_rect(ctx, layer_get_bounds(layer), 0, GCornerNone);
-		graphics_context_set_fill_color(ctx, GColorWhite);		// Markers
 	}
 // 	for (int i = 0; i < NUM_CLOCK_TICKS; ++i) {
 // 		gpath_draw_filled(ctx, s_tick_paths[i]);
@@ -73,37 +64,27 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
 
 // Hour
 	int colour_background = persist_read_int(MESSAGE_KEY_COLOUR_BACKGROUND);
-	int colour_hand_hour = persist_read_int(MESSAGE_KEY_COLOUR_HAND_HOUR);
-	int colour_hand_minute = persist_read_int(MESSAGE_KEY_COLOUR_HAND_MINUTE);
+	int colour_hands = persist_read_int(MESSAGE_KEY_COLOUR_HANDS);
 	
-	if(colour_background || colour_hand_hour) {
-		graphics_context_set_fill_color(ctx, GColorFromHEX(colour_hand_hour));
+	if(colour_background || colour_hands) {
+		graphics_context_set_fill_color(ctx, GColorFromHEX(colour_hands));
 		graphics_context_set_stroke_color(ctx, GColorFromHEX(colour_background));
 	} else {
 		graphics_context_set_fill_color(ctx, GColorWhite);
 		graphics_context_set_stroke_color(ctx, GColorBlack);
 	}
 	
-	gpath_rotate_to(s_hour_arrow, (TRIG_MAX_ANGLE * (((t->tm_hour % 12) * 6) + (t->tm_min / 10))) / (12 * 6)); // (((t->tm_hour % 12) * 6) + (t->tm_min / 10))) / (12 * 6)
+	gpath_rotate_to(s_hour_arrow, TRIG_MAX_ANGLE * 50 / 60); //(TRIG_MAX_ANGLE * (((t->tm_hour % 12) * 6) + (t->tm_min / 10))) / (12 * 6));
 	gpath_draw_filled(ctx, s_hour_arrow);
 	gpath_draw_outline(ctx, s_hour_arrow);
 
-// Minute
-	if(colour_background || colour_hand_minute) {
-		graphics_context_set_fill_color(ctx, GColorFromHEX(colour_hand_minute));
-		graphics_context_set_stroke_color(ctx, GColorFromHEX(colour_background));
-	} else {
-		graphics_context_set_fill_color(ctx, GColorWhite);
-		graphics_context_set_stroke_color(ctx, GColorBlack);
-	}
-
-	gpath_rotate_to(s_minute_arrow, TRIG_MAX_ANGLE * 8 / 60); // t->tm_min / 60
+	gpath_rotate_to(s_minute_arrow, TRIG_MAX_ANGLE * 8 / 60); //t->tm_min / 60);
 	gpath_draw_filled(ctx, s_minute_arrow);
 	gpath_draw_outline(ctx, s_minute_arrow);
 
 // Dot
-// 	graphics_context_set_fill_color(ctx, GColorWhite);
-// 	graphics_fill_rect(ctx, GRect(bounds.size.w / 2 - 1, bounds.size.h / 2 - 1, 3, 3), 0, GCornerNone);
+// 	graphics_context_set_fill_color(ctx, GColorBlack);
+// 	graphics_fill_circle(ctx, GPoint(bounds.size.w / 2,bounds.size.h / 2), 11);
 }
 
 static void date_update_proc(Layer *layer, GContext *ctx) {
@@ -113,10 +94,6 @@ static void date_update_proc(Layer *layer, GContext *ctx) {
 // Weekday
 	strftime(s_weekday_buffer, sizeof(s_weekday_buffer), "%A", time);
 	text_layer_set_text(s_weekday_label, s_weekday_buffer);
-
-// Day
-// 	strftime(s_date_buffer, sizeof(s_date_buffer), "%d", time);
-// 	text_layer_set_text(s_day_label, s_date_buffer);
 
 // Month
 	strftime(s_month_buffer, sizeof(s_month_buffer), "%d  %B", time);
@@ -140,7 +117,7 @@ static void window_load(Window *window) {
 	layer_add_child(window_layer, s_date_layer);
 
 // Sharingan
-	s_sharingan_layer = bitmap_layer_create(GRect(0, 0, bounds.size.w, bounds.size.h)); // battery
+	s_sharingan_layer = bitmap_layer_create(GRect(0, 0, bounds.size.w, bounds.size.h));
 	bitmap_layer_set_bitmap(s_sharingan_layer, gbitmap_create_with_resource(RESOURCE_ID_IMAGE_SHARINGAN_FULL));
 	layer_mark_dirty(bitmap_layer_get_layer(s_sharingan_layer));
 	#if defined(PBL_COLOR)
@@ -155,14 +132,6 @@ static void window_load(Window *window) {
 	text_layer_set_font(s_weekday_label, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_NARUTO_15)));
 	layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_weekday_label));
 	text_layer_set_text(s_weekday_label, s_weekday_buffer);
-
-// Date
-// 	s_day_label = text_layer_create(GRect(bounds.size.w - 25, bounds.size.h/2 - 15, 25, 30));
-// 	text_layer_set_text_alignment(s_day_label, GTextAlignmentRight);
-// 	text_layer_set_background_color(s_day_label, GColorClear);
-// 	text_layer_set_font(s_day_label, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_NARUTO_15)));
-// 	layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_day_label));
-// 	text_layer_set_text(s_day_label, s_date_buffer);
 	
 // Month
 	s_month_label = text_layer_create(GRect(0, bounds.size.h - 16, bounds.size.w, 16)); // Bottom
@@ -175,15 +144,12 @@ static void window_load(Window *window) {
 // Set Colours
 	int colour_background = persist_read_int(MESSAGE_KEY_COLOUR_BACKGROUND);
 	int colour_weekday = persist_read_int(MESSAGE_KEY_COLOUR_WEEKDAY);
-	int colour_day = persist_read_int(MESSAGE_KEY_COLOUR_DAY);
 	int colour_month = persist_read_int(MESSAGE_KEY_COLOUR_MONTH);
-	if(colour_background || colour_weekday || colour_day || colour_month) {
+	if(colour_background || colour_weekday || colour_month) {
 		text_layer_set_text_color(s_weekday_label, GColorFromHEX(colour_weekday));
-// 		text_layer_set_text_color(s_day_label, GColorFromHEX(colour_day));
 		text_layer_set_text_color(s_month_label, GColorFromHEX(colour_month));
 	} else {
 		text_layer_set_text_color(s_weekday_label, GColorWhite);
-// 		text_layer_set_text_color(s_day_label, GColorWhite);
 		text_layer_set_text_color(s_month_label, GColorWhite);
 	}
 	
@@ -195,13 +161,10 @@ static void window_load(Window *window) {
 
 static void window_unload(Window *window) {
 	layer_destroy(s_background_layer);
-// 	layer_destroy(s_date_layer);
+	layer_destroy(s_hands_layer);
 
 	text_layer_destroy(s_weekday_label);
-// 	text_layer_destroy(s_day_label);
 	text_layer_destroy(s_month_label);
-
-	layer_destroy(s_hands_layer);
 }
 
 static void init() {
@@ -213,7 +176,6 @@ static void init() {
 	window_stack_push(s_main_window, true);
 	
 	s_weekday_buffer[0] = '\0';
-// 	s_date_buffer[0] 	= '\0';
 	s_month_buffer[0] 	= '\0';
 
 // init hand paths
