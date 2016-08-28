@@ -15,11 +15,19 @@
             "COLOUR_BACKGROUND",
             "COLOUR_HANDS",
             "COLOUR_WEEKDAY",
-            "COLOUR_MONTH"
+            "COLOUR_MONTH",
+            "TOGGLE_SUFFIX"
         ],
         "projectType": "native",
         "resources": {
             "media": [
+                {
+                    "file": "images/Menu Image",
+                    "menuIcon": true,
+                    "name": "IMAGE_MENU_IMAGE",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
                 {
                     "file": "fonts/Naruto",
                     "name": "FONT_NARUTO_15",
@@ -58,5 +66,5 @@
             "watchface": true
         }
     },
-    "version": "0.2.0"
+    "version": "0.3.0"
 }

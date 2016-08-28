@@ -10,6 +10,41 @@ static GPath *s_tick_paths[NUM_CLOCK_TICKS];
 static GPath *s_minute_arrow, *s_hour_arrow;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////// Methods /////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void getMonth(char *input, int location, struct tm *tick_time) {		// 0 is before, 1 is after
+	char month_current[16];
+	strftime(month_current, sizeof(month_current), "%B", tick_time);
+ 	
+	#if defined(PBL_RECT)
+		if(strlen(month_current) > 7) {
+			strcat(input,"  %b");
+		} else {
+			strcat(input,"  %B");
+		}
+	#elif defined(PBL_ROUND)
+		if(strlen(month_current) > 5) {
+			strcat(input,"  %b");
+	 	} else {
+			strcat(input,"  %B");
+		}
+	#endif
+}
+
+void getSuffix(char *input, char date_current[5]) {
+	if (strncmp(date_current, "01", 2) == 0 || strncmp(date_current, "21", 2) == 0 || strncmp(date_current,"31",2) == 0) { 
+		strcat(input,"st");
+	} else if (strncmp(date_current, "02", 2) == 0 || strncmp(date_current, "22", 2) == 0) {
+		strcat(input,"nd");
+	} else if (strncmp(date_current, "03", 2) == 0 || strncmp(date_current, "23", 2) == 0) { 
+		strcat(input,"rd");
+	} else {
+		strcat(input,"th");
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////// Callbacks ///////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -30,8 +65,13 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 	persist_write_int(MESSAGE_KEY_COLOUR_WEEKDAY, colour_weekday);
 	persist_write_int(MESSAGE_KEY_COLOUR_MONTH, colour_month);
 // 	persist_write_int(MESSAGE_KEY_COLOUR_BLUETOOTH, colour_bluetooth);	
+
+// Date	
+	Tuple *toggle_suffix_t = dict_find(iter, MESSAGE_KEY_TOGGLE_SUFFIX);
+	int toggle_suffix = toggle_suffix_t->value->int32;
+	persist_write_int(MESSAGE_KEY_TOGGLE_SUFFIX, toggle_suffix);
 	
-// Set Colours
+// Update
 	layer_mark_dirty(s_background_layer); //update background
 	layer_mark_dirty(s_hands_layer); //update Hands
 	text_layer_set_text_color(s_weekday_label, GColorFromHEX(colour_weekday));	// Weekday
@@ -60,7 +100,7 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
 	GRect bounds = layer_get_bounds(layer);
 
 	time_t now = time(NULL);
-	struct tm *t = localtime(&now);
+	struct tm *tick_time = localtime(&now);
 
 // Hour
 	int colour_background = persist_read_int(MESSAGE_KEY_COLOUR_BACKGROUND);
@@ -74,11 +114,11 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
 		graphics_context_set_stroke_color(ctx, GColorBlack);
 	}
 	
-	gpath_rotate_to(s_hour_arrow, TRIG_MAX_ANGLE * 50 / 60); //(TRIG_MAX_ANGLE * (((t->tm_hour % 12) * 6) + (t->tm_min / 10))) / (12 * 6));
+	gpath_rotate_to(s_hour_arrow, (TRIG_MAX_ANGLE * (((tick_time->tm_hour % 12) * 6) + (tick_time->tm_min / 10))) / (12 * 6)); // TRIG_MAX_ANGLE * 50 / 60);
 	gpath_draw_filled(ctx, s_hour_arrow);
 	gpath_draw_outline(ctx, s_hour_arrow);
 
-	gpath_rotate_to(s_minute_arrow, TRIG_MAX_ANGLE * 8 / 60); //t->tm_min / 60);
+	gpath_rotate_to(s_minute_arrow, TRIG_MAX_ANGLE * tick_time->tm_min / 60); //8 / 60);
 	gpath_draw_filled(ctx, s_minute_arrow);
 	gpath_draw_outline(ctx, s_minute_arrow);
 
@@ -89,16 +129,32 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
 
 static void date_update_proc(Layer *layer, GContext *ctx) {
 	time_t now = time(NULL);
-	struct tm *time = localtime(&now);
+	struct tm *tick_time = localtime(&now);
+	
+	static char date_current[16];
+	strftime(date_current, 80, "%d%m", tick_time);
+	
+	int toggle_suffix = persist_read_int(MESSAGE_KEY_TOGGLE_SUFFIX);	
 
 // Weekday
-	strftime(s_weekday_buffer, sizeof(s_weekday_buffer), "%A", time);
+	strftime(s_weekday_buffer, sizeof(s_weekday_buffer), "%A", tick_time);
 	text_layer_set_text(s_weekday_label, s_weekday_buffer);
 
 // Month
-	strftime(s_month_buffer, sizeof(s_month_buffer), "%d  %B", time);
+	char char_suffix[32] = "";
+	strcat(char_suffix,"%e");
+	if(toggle_suffix == 1) {
+		getSuffix(char_suffix, date_current);
+	}	
+	getMonth(char_suffix, 0, tick_time);
+	
+	strftime(s_month_buffer, sizeof(s_month_buffer), char_suffix, tick_time);
 	text_layer_set_text(s_month_label, s_month_buffer);
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////// Other ///////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
 	layer_mark_dirty(window_get_root_layer(s_main_window));
