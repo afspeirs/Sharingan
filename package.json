@@ -12,10 +12,7 @@
         "displayName": "Sharingan",
         "enableMultiJS": true,
         "messageKeys": [
-            "COLOUR_BACKGROUND",
-            "COLOUR_HANDS",
-            "COLOUR_WEEKDAY",
-            "COLOUR_MONTH",
+            "COLOUR_BLUETOOTH",
             "TOGGLE_SUFFIX"
         ],
         "projectType": "native",
@@ -66,5 +63,5 @@
             "watchface": true
         }
     },
-    "version": "0.3.0"
+    "version": "0.4.0"
 }

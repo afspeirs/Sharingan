@@ -13,43 +13,12 @@ module.exports = [
 			},
 			{
 				"type": "color",
-				"messageKey": "COLOUR_BACKGROUND",
-				"label": "Background",
-				"defaultValue": "000000",
-				"sunlight": true
-			},
-			{
-				"type": "color",
-				"messageKey": "COLOUR_HANDS",
-				"label": "Hands",
-				"defaultValue": "FFFFFF",
+				"messageKey": "COLOUR_BLUETOOTH",
+				"label": "Blutooth Disconnection",
+				"defaultValue": "FF0000",
 				"sunlight": true,
 				"capabilities": ["NOT_BW"],
-			},
-			{
-				"type": "color",
-				"messageKey": "COLOUR_WEEKDAY",
-				"label": "Weekday",
-				"defaultValue": "FFFFFF",
-				"sunlight": true,
-				"capabilities": ["NOT_BW"],
-			},
-			{
-				"type": "color",
-				"messageKey": "COLOUR_MONTH",
-				"label": "Month",
-				"defaultValue": "FFFFFF",
-				"sunlight": true,
-				"capabilities": ["NOT_BW"],
-			},
-// 			{
-// 				"type": "color",
-// 				"messageKey": "COLOUR_BLUETOOTH",
-// 				"label": "Blutooth Disconnection",
-// 				"defaultValue": "FF0000",
-// 				"sunlight": true,
-// 				"capabilities": ["NOT_BW"],
-// 			}
+			}
 		]
 	},
 // 	{
