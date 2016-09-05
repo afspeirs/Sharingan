@@ -13,11 +13,25 @@
         "enableMultiJS": true,
         "messageKeys": [
             "COLOUR_BLUETOOTH",
-            "TOGGLE_SUFFIX"
+            "TOGGLE_SUFFIX",
+            "TOGGLE_DIGITAL"
         ],
         "projectType": "native",
         "resources": {
             "media": [
+                {
+                    "file": "fonts/Naruto Font",
+                    "name": "FONT_NARUTO_15",
+                    "targetPlatforms": null,
+                    "type": "font"
+                },
+                {
+                    "characterRegex": "[0-9 ]",
+                    "file": "fonts/Naruto Font",
+                    "name": "FONT_NARUTO_32",
+                    "targetPlatforms": null,
+                    "type": "font"
+                },
                 {
                     "file": "images/Menu Image",
                     "menuIcon": true,
@@ -26,30 +40,11 @@
                     "type": "bitmap"
                 },
                 {
-                    "file": "fonts/Naruto",
-                    "name": "FONT_NARUTO_15",
-                    "targetPlatforms": null,
-                    "type": "font"
-                },
-                {
                     "file": "images/Sharingan Full",
                     "name": "IMAGE_SHARINGAN_FULL",
                     "targetPlatforms": [
                         "basalt"
                     ],
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/Battery White",
-                    "name": "IMAGE_BATTERY_WHITE",
-                    "targetPlatforms": null,
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/Battery Black",
-                    "name": "IMAGE_BATTERY_BLACK",
-                    "storageFormat": "png",
-                    "targetPlatforms": null,
                     "type": "bitmap"
                 }
             ]
@@ -63,5 +58,5 @@
             "watchface": true
         }
     },
-    "version": "0.4.0"
+    "version": "0.5.0"
 }

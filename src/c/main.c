@@ -1,12 +1,11 @@
 #include <pebble.h>
 #include "main.h"
 
-static Window *s_main_window;
+static Window *s_window;
 static Layer *s_background_layer, *s_date_layer, *s_hands_layer;
-static TextLayer *s_weekday_label, *s_month_label;
+static TextLayer *s_weekday_label, *s_month_label, *s_hour_layer, *s_minute_layer;
 static char s_weekday_buffer[16], s_month_buffer[16];
 static BitmapLayer *s_sharingan_layer;
-static GPath *s_tick_paths[NUM_CLOCK_TICKS];
 static GPath *s_minute_arrow, *s_hour_arrow;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -45,14 +44,13 @@ void getSuffix(char *input, char date_current[5]) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void unobstructed_change(AnimationProgress progress, void* data) {
-	GRect bounds = layer_get_unobstructed_bounds(window_get_root_layer(s_main_window));
-
-	GPoint center = grect_center_point(&bounds);
+	GRect b = layer_get_unobstructed_bounds(window_get_root_layer(s_window));
+	
+	GPoint center = grect_center_point(&b);
 	gpath_move_to(s_minute_arrow, center);
 	gpath_move_to(s_hour_arrow, center);
-
-	layer_set_frame(bitmap_layer_get_layer(s_sharingan_layer),GRect(bounds.size.w/2 - 136/2, bounds.size.h/2 - 136/2, 136, 136));
-	layer_set_frame(text_layer_get_layer(s_month_label),GRect(0, bounds.size.h - 16, bounds.size.w, 16)); // Bottom
+	layer_set_frame(bitmap_layer_get_layer(s_sharingan_layer),GRect(b.size.w/2-136/2, b.size.h/2-136/2, 136, 136));
+	layer_set_frame(text_layer_get_layer(s_month_label),GRect(                     0, b.size.h-16, b.size.w, 16)); // Bottom
 }
 
 static void bluetooth_callback(bool connected) {
@@ -80,14 +78,19 @@ static void inbox_received_handler(DictionaryIterator *iter, void *context) {
 	int colour_bluetooth = colour_bluetooth_t->value->int32;
 	persist_write_int(MESSAGE_KEY_COLOUR_BLUETOOTH, colour_bluetooth);	
 
+// Digital
+	Tuple *toggle_digital_t = dict_find(iter, MESSAGE_KEY_TOGGLE_DIGITAL);
+	int toggle_digital = toggle_digital_t->value->int32;
+	persist_write_int(MESSAGE_KEY_TOGGLE_DIGITAL, toggle_digital);
+	
 // Date	
 	Tuple *toggle_suffix_t = dict_find(iter, MESSAGE_KEY_TOGGLE_SUFFIX);
 	int toggle_suffix = toggle_suffix_t->value->int32;
 	persist_write_int(MESSAGE_KEY_TOGGLE_SUFFIX, toggle_suffix);
 	
 // Update
-	layer_mark_dirty(s_background_layer); //update background
-	layer_mark_dirty(s_hands_layer); //update Hands
+	layer_mark_dirty(s_background_layer); 	// update background
+	layer_mark_dirty(s_hands_layer); 		// update Hands
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -100,12 +103,10 @@ static void bg_update_proc(Layer *layer, GContext *ctx) {
 }
 
 static void hands_update_proc(Layer *layer, GContext *ctx) {
-// 	GRect bounds = layer_get_unobstructed_bounds(layer);
-
 	time_t now = time(NULL);
 	struct tm *tick_time = localtime(&now);
 
-// Hour
+// Hour & Minute
 	graphics_context_set_fill_color(ctx, GColorWhite);
 	graphics_context_set_stroke_color(ctx, GColorBlack);
 	
@@ -116,10 +117,6 @@ static void hands_update_proc(Layer *layer, GContext *ctx) {
 	gpath_rotate_to(s_minute_arrow, TRIG_MAX_ANGLE * tick_time->tm_min / 60); //8 / 60);
 	gpath_draw_filled(ctx, s_minute_arrow);
 	gpath_draw_outline(ctx, s_minute_arrow);
-
-// Dot
-// 	graphics_context_set_fill_color(ctx, GColorBlack);
-// 	graphics_fill_circle(ctx, GPoint(bounds.size.w / 2,bounds.size.h / 2), 11);
 }
 
 static void date_update_proc(Layer *layer, GContext *ctx) {
@@ -131,11 +128,16 @@ static void date_update_proc(Layer *layer, GContext *ctx) {
 	
 	int toggle_suffix = persist_read_int(MESSAGE_KEY_TOGGLE_SUFFIX);	
 
-// Weekday
-	strftime(s_weekday_buffer, sizeof(s_weekday_buffer), "%A", tick_time);
+// Top
+	int toggle_digital = persist_read_int(MESSAGE_KEY_TOGGLE_DIGITAL);
+	if(toggle_digital) {
+		strftime(s_weekday_buffer, sizeof(s_weekday_buffer), "%H   %M", tick_time);
+	} else {
+		strftime(s_weekday_buffer, sizeof(s_weekday_buffer), "%A", tick_time);
+	}
 	text_layer_set_text(s_weekday_label, s_weekday_buffer);
 
-// Month
+// Bottom
 	char char_suffix[32] = "";
 	strcat(char_suffix,"%e");
 	if(toggle_suffix == 1) {
@@ -152,7 +154,7 @@ static void date_update_proc(Layer *layer, GContext *ctx) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
-	layer_mark_dirty(window_get_root_layer(s_main_window));
+	layer_mark_dirty(window_get_root_layer(s_window));
 }
 
 static void window_load(Window *window) {
@@ -169,9 +171,11 @@ static void window_load(Window *window) {
 
 // Locations
 	s_sharingan_layer = bitmap_layer_create(GRect(bounds.size.w/2 - 136/2, bounds.size.h/2 - 136/2, 136, 136));
-	s_weekday_label = text_layer_create(GRect(0, 0, bounds.size.w, 25)); // Top
-	s_month_label = text_layer_create(GRect(0, bounds.size.h - 16, bounds.size.w, 16)); // Bottom
-	
+	s_hour_layer	= text_layer_create(GRect(                 0, bounds.size.h/2-16, bounds.size.w/2-15, 35));
+ 	s_minute_layer	= text_layer_create(GRect(bounds.size.w/2+15, bounds.size.h/2-16, bounds.size.w/2-15, 35));
+	s_weekday_label = text_layer_create(GRect(0,                0, bounds.size.w, 25)); // Top
+	s_month_label	= text_layer_create(GRect(0, bounds.size.h-16, bounds.size.w, 16)); // Bottom
+
 // Sharingan
 	bitmap_layer_set_bitmap(s_sharingan_layer, gbitmap_create_with_resource(RESOURCE_ID_IMAGE_SHARINGAN_FULL));
 	layer_mark_dirty(bitmap_layer_get_layer(s_sharingan_layer));
@@ -179,7 +183,7 @@ static void window_load(Window *window) {
 		bitmap_layer_set_compositing_mode(s_sharingan_layer, GCompOpSet);	
 	#endif
 	layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(s_sharingan_layer));
-	
+
 // Weekday
 	text_layer_set_text_alignment(s_weekday_label, GTextAlignmentCenter);
 	text_layer_set_background_color(s_weekday_label, GColorClear);
@@ -193,7 +197,7 @@ static void window_load(Window *window) {
 	text_layer_set_font(s_month_label, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_NARUTO_15)));
 	layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_month_label));
 	text_layer_set_text(s_month_label, s_month_buffer);
-	
+
 // Hands
 	s_hands_layer = layer_create(bounds);
 	layer_set_update_proc(s_hands_layer, hands_update_proc);
@@ -205,40 +209,25 @@ static void window_load(Window *window) {
 static void window_unload(Window *window) {
 	layer_destroy(s_background_layer);
 	layer_destroy(s_hands_layer);
-
+	
+	text_layer_destroy(s_hour_layer);
+	text_layer_destroy(s_minute_layer);
 	text_layer_destroy(s_weekday_label);
 	text_layer_destroy(s_month_label);
 }
 
 static void init() {
-	s_main_window = window_create();
-	window_set_window_handlers(s_main_window, (WindowHandlers) {
+	s_window = window_create();
+	window_set_window_handlers(s_window, (WindowHandlers) {
 		.load = window_load,
 		.unload = window_unload,
 	});
-	window_stack_push(s_main_window, true);
+	window_stack_push(s_window, true);
 	
 	UnobstructedAreaHandlers handlers = {
 		.change = unobstructed_change,
 	};
 	unobstructed_area_service_subscribe(handlers, NULL);
-	
-	s_weekday_buffer[0] = '\0';
-	s_month_buffer[0] 	= '\0';
-
-// init hand paths
-	s_minute_arrow = gpath_create(&MINUTE_HAND_POINTS);
-	s_hour_arrow = gpath_create(&HOUR_HAND_POINTS);
-
-	Layer *window_layer = window_get_root_layer(s_main_window);
-	GRect bounds = layer_get_bounds(window_layer);
-	GPoint center = grect_center_point(&bounds);
-	gpath_move_to(s_minute_arrow, center);
-	gpath_move_to(s_hour_arrow, center);
-	
-	for (int i = 0; i < NUM_CLOCK_TICKS; ++i) {
-		s_tick_paths[i] = gpath_create(&ANALOG_BG_POINTS[i]);
-	}
 	
 	connection_service_subscribe((ConnectionHandlers) {
   		.pebble_app_connection_handler = bluetooth_callback
@@ -249,6 +238,19 @@ static void init() {
 	app_message_register_inbox_received(inbox_received_handler);
 	app_message_open(inbox_size, outbox_size);
 	
+	s_weekday_buffer[0] = '\0';
+	s_month_buffer[0] 	= '\0';
+
+// init hand paths
+	s_minute_arrow = gpath_create(&MINUTE_HAND_POINTS);
+	s_hour_arrow = gpath_create(&HOUR_HAND_POINTS);
+
+	Layer *window_layer = window_get_root_layer(s_window);
+	GRect bounds = layer_get_bounds(window_layer);
+	GPoint center = grect_center_point(&bounds);
+	gpath_move_to(s_minute_arrow, center);
+	gpath_move_to(s_hour_arrow, center);
+	
 	tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
 }
 
@@ -257,12 +259,8 @@ static void deinit() {
 	gpath_destroy(s_hour_arrow);
 	bitmap_layer_destroy(s_sharingan_layer);
 
-	for (int i = 0; i < NUM_CLOCK_TICKS; ++i) {
-		gpath_destroy(s_tick_paths[i]);
-	}
-
 	tick_timer_service_unsubscribe();
-	window_destroy(s_main_window);
+	window_destroy(s_window);
 }
 
 int main() {

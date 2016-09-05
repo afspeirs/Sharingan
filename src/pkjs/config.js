@@ -21,6 +21,21 @@ module.exports = [
 			}
 		]
 	},
+	{
+		"type": "section",
+		"items": [
+			{
+				"type": "heading",
+				"defaultValue": "Digital Time"
+			},
+			{
+				"type": "toggle",
+				"messageKey": "TOGGLE_DIGITAL",
+				"label": "Toggle Digital time",
+				"defaultValue": false,
+			}
+		]
+ 	},
 // 	{
 // 		"type": "section",
 // 		"items": [
