@@ -131,7 +131,11 @@ static void date_update_proc(Layer *layer, GContext *ctx) {
 // Top
 	int toggle_digital = persist_read_int(MESSAGE_KEY_TOGGLE_DIGITAL);
 	if(toggle_digital) {
-		strftime(s_weekday_buffer, sizeof(s_weekday_buffer), "%H   %M", tick_time);
+		if(clock_is_24h_style()) {
+			strftime(s_weekday_buffer, sizeof(s_weekday_buffer), "%H   %M", tick_time);
+		} else {
+			strftime(s_weekday_buffer, sizeof(s_weekday_buffer), "%I   %M", tick_time);
+		}
 	} else {
 		strftime(s_weekday_buffer, sizeof(s_weekday_buffer), "%A", tick_time);
 	}
