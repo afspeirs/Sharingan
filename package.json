@@ -1,62 +1,61 @@
 {
-    "author": "AFSpeirs",
-    "dependencies": {
-        "pebble-clay": "^1.0.2"
-    },
-    "keywords": [],
-    "name": "sharingan",
-    "pebble": {
-        "capabilities": [
-            "configurable"
-        ],
-        "displayName": "Sharingan",
-        "enableMultiJS": true,
-        "messageKeys": [
-            "COLOUR_BLUETOOTH",
-            "TOGGLE_SUFFIX",
-            "TOGGLE_DIGITAL"
-        ],
-        "projectType": "native",
-        "resources": {
-            "media": [
-                {
-                    "file": "fonts/Naruto Font",
-                    "name": "FONT_NARUTO_15",
-                    "targetPlatforms": null,
-                    "type": "font"
-                },
-                {
-                    "characterRegex": "[0-9 ]",
-                    "file": "fonts/Naruto Font",
-                    "name": "FONT_NARUTO_32",
-                    "targetPlatforms": null,
-                    "type": "font"
-                },
-                {
-                    "file": "images/Menu Image",
-                    "menuIcon": true,
-                    "name": "IMAGE_MENU_IMAGE",
-                    "targetPlatforms": null,
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/Sharingan Full",
-                    "name": "IMAGE_SHARINGAN_FULL",
-                    "targetPlatforms": [
-                        "basalt"
-                    ],
-                    "type": "bitmap"
-                }
-            ]
-        },
-        "sdkVersion": "3",
-        "targetPlatforms": [
-            "basalt"
-        ],
-        "uuid": "e5be6da7-7665-43b8-b09a-ddd6824ef5b1",
-        "watchapp": {
-            "watchface": true
-        }
-    },
-    "version": "0.5.0"
+	"author": "AFSpeirs",
+	"dependencies": {
+		"pebble-clay": "^1.0.2"
+	},
+	"keywords": [],
+	"name": "sharingan",
+	"pebble": {
+		"capabilities": [
+			"configurable"
+		],
+		"displayName": "Sharingan",
+		"enableMultiJS": true,
+		"messageKeys": [
+			"COLOUR_BLUETOOTH",
+			"TOGGLE_SUFFIX",
+			"TOGGLE_DIGITAL"
+		],
+		"projectType": "native",
+		"resources": {
+			"media": [
+				{
+					"file": "fonts/Naruto Font",
+					"name": "FONT_NARUTO_15",
+					"targetPlatforms": null,
+					"type": "font"
+				},
+				{
+					"characterRegex": "[0-9 ]",
+					"file": "fonts/Naruto Font",
+					"name": "FONT_NARUTO_32",
+					"targetPlatforms": null,
+					"type": "font"
+				},
+				{
+					"file": "images/MenuImage.png",
+					"menuIcon": true,
+					"name": "IMAGE_MENU_IMAGE",
+					"targetPlatforms": null,
+					"type": "bitmap"
+				},
+				{
+					"file": "images/Sharingan.png",
+					"name": "IMAGE_SHARINGAN_FULL",
+					"targetPlatforms": null,
+					"type": "bitmap"
+				}
+			]
+		},
+		"sdkVersion": "3",
+		"targetPlatforms": [
+			"basalt",
+			"diorite"
+		],
+		"uuid": "e5be6da7-7665-43b8-b09a-ddd6824ef5b1",
+		"watchapp": {
+			"watchface": true
+		}
+	},
+	"version": "0.6.0"
 }
